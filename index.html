@@ -646,37 +646,56 @@
     const dot2 = document.getElementById('dot2');
 
     function initAudio() {
-        if (!audioContext) {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        // 確保 AudioContext 處於運行狀態
-        if (audioContext.state === 'suspended') {
-            audioContext.resume();
+        try {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                console.log('AudioContext 已創建，狀態:', audioContext.state);
+            }
+            // 確保 AudioContext 處於運行狀態
+            if (audioContext.state === 'suspended') {
+                audioContext.resume().then(() => {
+                    console.log('AudioContext 已恢復');
+                });
+            }
+            console.log('音頻初始化完成，當前狀態:', audioContext.state);
+        } catch (e) {
+            console.error('音頻初始化失敗:', e);
         }
     }
 
     function playClick(isAccent) {
-        // 確保 audioContext 存在
-        if (!audioContext) {
-            initAudio();
+        try {
+            // 確保 audioContext 存在且處於運行狀態
+            if (!audioContext) {
+                initAudio();
+            }
+            
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // 使用較低頻率和sine波，音色更柔和溫暖
+            oscillator.frequency.value = isAccent ? 800 : 600;
+            oscillator.type = 'sine';
+            
+            // 保持大音量
+            const now = audioContext.currentTime;
+            gainNode.gain.setValueAtTime(1.0, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+            
+            oscillator.start(now);
+            oscillator.stop(now + 0.12);
+            
+            console.log('播放節拍:', isAccent ? '強拍' : '弱拍', oscillator.frequency.value + 'Hz');
+        } catch (e) {
+            console.error('播放失敗:', e);
         }
-        
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        // 使用較低頻率和sine波，音色更柔和溫暖
-        oscillator.frequency.value = isAccent ? 800 : 600;
-        oscillator.type = 'sine';
-        
-        // 保持大音量
-        gainNode.gain.setValueAtTime(1.0, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.12);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.12);
     }
 
     function updateBeatIndicator() {
@@ -713,6 +732,7 @@
             return;
         }
 
+        // 初始化音頻
         initAudio();
         
         isPlaying = true;
@@ -727,8 +747,13 @@
         stopBtn.classList.remove('hidden');
         durationBtns.forEach(btn => btn.disabled = true);
 
+        // 立即開始節拍
         intervalId = setInterval(() => {
-            playClick(currentBeat === 0);
+            try {
+                playClick(currentBeat === 0);
+            } catch (e) {
+                console.log('播放節拍失敗:', e);
+            }
             beatCount++;
             beatCountDisplay.textContent = beatCount;
             updateBeatIndicator();
