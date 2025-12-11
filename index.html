@@ -649,9 +649,18 @@
         if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
+        // 確保 AudioContext 處於運行狀態
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
     }
 
     function playClick(isAccent) {
+        // 確保 audioContext 存在
+        if (!audioContext) {
+            initAudio();
+        }
+        
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
         
