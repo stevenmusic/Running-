@@ -13,7 +13,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-
+```
     html {
         height: 100%;
         width: 100%;
@@ -579,14 +579,14 @@
         }
     }
 </style>
-
+```
 
 </head>
 <body>
     <div class="container">
         <div class="title">節拍器</div>
 
-
+```
     <div class="tempo-display">
         <div class="tempo-value">180</div>
         <div class="tempo-label">每分鐘拍數</div>
@@ -680,19 +680,17 @@
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            // 使用較低頻率和sine波，音色更柔和溫暖
-            oscillator.frequency.value = isAccent ? 800 : 600;
-            oscillator.type = 'sine';
+            // 恢復原本的設定：方波、較高頻率
+            oscillator.frequency.value = isAccent ? 1200 : 800;
+            oscillator.type = 'square';
             
-            // 保持大音量
+            // 原本的音量
             const now = audioContext.currentTime;
-            gainNode.gain.setValueAtTime(1.0, now);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+            gainNode.gain.setValueAtTime(0.8, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
             
             oscillator.start(now);
-            oscillator.stop(now + 0.12);
-            
-            console.log('播放節拍:', isAccent ? '強拍' : '弱拍', oscillator.frequency.value + 'Hz');
+            oscillator.stop(now + 0.1);
         } catch (e) {
             console.error('播放失敗:', e);
         }
