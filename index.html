@@ -13,7 +13,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-
+```
     html {
         height: 100%;
         width: 100%;
@@ -252,7 +252,7 @@
 <script>
     const BPM = 180;
     const BEATS_PER_MEASURE = 2;
-    const INTERVAL = 60000 / BPM; // milliseconds per beat
+    const INTERVAL = 60000 / BPM;
 
     let audioContext;
     let beatCount = 0;
@@ -263,7 +263,6 @@
     let intervalId = null;
     let countdownId = null;
 
-    // DOM elements
     const beatCountDisplay = document.getElementById('beatCount');
     const timeDisplay = document.getElementById('timeDisplay');
     const startBtn = document.getElementById('startBtn');
@@ -272,14 +271,12 @@
     const dot1 = document.getElementById('dot1');
     const dot2 = document.getElementById('dot2');
 
-    // Initialize Audio Context
     function initAudio() {
         if (!audioContext) {
             audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
     }
 
-    // Play metronome click
     function playClick(isAccent) {
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
@@ -297,7 +294,6 @@
         oscillator.stop(audioContext.currentTime + 0.1);
     }
 
-    // Update beat indicators
     function updateBeatIndicator() {
         dot1.classList.remove('active');
         dot2.classList.remove('active');
@@ -309,14 +305,12 @@
         }
     }
 
-    // Format time display
     function formatTime(seconds) {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
-        return `剩餘時間：<span class="time-value">${mins}:${secs.toString().padStart(2, '0')}</span>`;
+        return '剩餘時間：<span class="time-value">' + mins + ':' + secs.toString().padStart(2, '0') + '</span>';
     }
 
-    // Duration button click
     durationBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             durationBtns.forEach(b => b.classList.remove('selected'));
@@ -328,7 +322,6 @@
         });
     });
 
-    // Start button
     startBtn.addEventListener('click', () => {
         if (!selectedDuration) {
             alert('請先選擇練習時長');
@@ -349,7 +342,6 @@
         stopBtn.classList.remove('hidden');
         durationBtns.forEach(btn => btn.disabled = true);
 
-        // Beat interval
         intervalId = setInterval(() => {
             playClick(currentBeat === 0);
             beatCount++;
@@ -359,7 +351,6 @@
             currentBeat = (currentBeat + 1) % BEATS_PER_MEASURE;
         }, INTERVAL);
 
-        // Countdown interval
         countdownId = setInterval(() => {
             remainingTime--;
             timeDisplay.innerHTML = formatTime(remainingTime);
@@ -371,7 +362,6 @@
         }, 1000);
     });
 
-    // Stop button
     stopBtn.addEventListener('click', () => {
         stopMetronome();
     });
@@ -397,7 +387,6 @@
         dot2.classList.remove('active');
     }
 
-    // Prevent screen sleep
     let wakeLock = null;
     async function requestWakeLock() {
         try {
