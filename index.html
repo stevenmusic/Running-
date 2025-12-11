@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>節拍器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+```
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .container {
+        background: white;
+        border-radius: 30px;
+        padding: 40px 30px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        width: 100%;
+        max-width: 390px;
+    }
+
+    .title {
+        text-align: center;
+        font-size: 36px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 30px;
+    }
+
+    .tempo-display {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .tempo-value {
+        font-size: 72px;
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 5px;
+    }
+
+    .tempo-label {
+        font-size: 24px;
+        color: #666;
+    }
+
+    .beat-info {
+        background: #f8f9fa;
+        border-radius: 20px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+
+    .beat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .beat-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .beat-label {
+        font-size: 22px;
+        color: #666;
+    }
+
+    .beat-value {
+        font-size: 48px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .beat-indicator {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .beat-dot {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #ddd;
+        transition: all 0.1s ease;
+    }
+
+    .beat-dot.active {
+        background: #667eea;
+        transform: scale(1.3);
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
+    }
+
+    .duration-section {
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    .duration-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .duration-btn {
+        padding: 20px;
+        font-size: 26px;
+        font-weight: bold;
+        border: 3px solid #667eea;
+        background: white;
+        color: #667eea;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .duration-btn.selected {
+        background: #667eea;
+        color: white;
+    }
+
+    .duration-btn:active {
+        transform: scale(0.95);
+    }
+
+    .time-remaining {
+        text-align: center;
+        font-size: 28px;
+        color: #666;
+        margin-bottom: 25px;
+    }
+
+    .time-value {
+        font-size: 42px;
+        font-weight: bold;
+        color: #764ba2;
+    }
+
+    .control-button {
+        width: 100%;
+        padding: 25px;
+        font-size: 32px;
+        font-weight: bold;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .start-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        margin-bottom: 15px;
+    }
+
+    .start-btn:active {
+        transform: translateY(2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .stop-btn {
+        background: #f44336;
+        color: white;
+    }
+
+    .stop-btn:active {
+        transform: translateY(2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    @media (max-width: 400px) {
+        .container {
+            padding: 30px 20px;
+        }
+        
+        .tempo-value {
+            font-size: 64px;
+        }
+        
+        .beat-value {
+            font-size: 42px;
+        }
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="container">
+        <div class="title">節拍器</div>
+
+```
+    <div class="tempo-display">
+        <div class="tempo-value">180</div>
+        <div class="tempo-label">每分鐘拍數</div>
+    </div>
+
+    <div class="beat-info">
+        <div class="beat-row">
+            <span class="beat-label">拍號：</span>
+            <span class="beat-value">2/2</span>
+        </div>
+        <div class="beat-row">
+            <span class="beat-label">已打：</span>
+            <span class="beat-value" id="beatCount">0</span>
+        </div>
+        <div class="beat-indicator">
+            <div class="beat-dot" id="dot1"></div>
+            <div class="beat-dot" id="dot2"></div>
+        </div>
+    </div>
+
+    <div class="duration-section">
+        <div class="section-title">練習時長</div>
+        <div class="duration-buttons">
+            <button class="duration-btn" data-duration="15">15分鐘</button>
+            <button class="duration-btn" data-duration="30">30分鐘</button>
+            <button class="duration-btn" data-duration="45">45分鐘</button>
+            <button class="duration-btn" data-duration="60">60分鐘</button>
+        </div>
+    </div>
+
+    <div class="time-remaining" id="timeDisplay">請選擇練習時長</div>
+
+    <button class="control-button start-btn" id="startBtn">開始</button>
+    <button class="control-button stop-btn hidden" id="stopBtn">停止</button>
+</div>
+
+<script>
+    const BPM = 180;
+    const BEATS_PER_MEASURE = 2;
+    const INTERVAL = 60000 / BPM; // milliseconds per beat
+
+    let audioContext;
+    let beatCount = 0;
+    let currentBeat = 0;
+    let isPlaying = false;
+    let selectedDuration = null;
+    let remainingTime = 0;
+    let intervalId = null;
+    let countdownId = null;
+
+    // DOM elements
+    const beatCountDisplay = document.getElementById('beatCount');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const durationBtns = document.querySelectorAll('.duration-btn');
+    const dot1 = document.getElementById('dot1');
+    const dot2 = document.getElementById('dot2');
+
+    // Initialize Audio Context
+    function initAudio() {
+        if (!audioContext) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    // Play metronome click
+    function playClick(isAccent) {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = isAccent ? 1200 : 800;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.1);
+    }
+
+    // Update beat indicators
+    function updateBeatIndicator() {
+        dot1.classList.remove('active');
+        dot2.classList.remove('active');
+        
+        if (currentBeat === 0) {
+            dot1.classList.add('active');
+        } else {
+            dot2.classList.add('active');
+        }
+    }
+
+    // Format time display
+    function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `剩餘時間：<span class="time-value">${mins}:${secs.toString().padStart(2, '0')}</span>`;
+    }
+
+    // Duration button click
+    durationBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            durationBtns.forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedDuration = parseInt(btn.dataset.duration);
+            remainingTime = selectedDuration * 60;
+            timeDisplay.innerHTML = formatTime(remainingTime);
+            startBtn.disabled = false;
+        });
+    });
+
+    // Start button
+    startBtn.addEventListener('click', () => {
+        if (!selectedDuration) {
+            alert('請先選擇練習時長');
+            return;
+        }
+
+        initAudio();
+        
+        isPlaying = true;
+        beatCount = 0;
+        currentBeat = 0;
+        remainingTime = selectedDuration * 60;
+        
+        beatCountDisplay.textContent = beatCount;
+        timeDisplay.innerHTML = formatTime(remainingTime);
+        
+        startBtn.classList.add('hidden');
+        stopBtn.classList.remove('hidden');
+        durationBtns.forEach(btn => btn.disabled = true);
+
+        // Beat interval
+        intervalId = setInterval(() => {
+            playClick(currentBeat === 0);
+            beatCount++;
+            beatCountDisplay.textContent = beatCount;
+            updateBeatIndicator();
+            
+            currentBeat = (currentBeat + 1) % BEATS_PER_MEASURE;
+        }, INTERVAL);
+
+        // Countdown interval
+        countdownId = setInterval(() => {
+            remainingTime--;
+            timeDisplay.innerHTML = formatTime(remainingTime);
+            
+            if (remainingTime <= 0) {
+                stopMetronome();
+                alert('練習時間結束！\n總共打了 ' + beatCount + ' 拍');
+            }
+        }, 1000);
+    });
+
+    // Stop button
+    stopBtn.addEventListener('click', () => {
+        stopMetronome();
+    });
+
+    function stopMetronome() {
+        isPlaying = false;
+        
+        if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = null;
+        }
+        
+        if (countdownId) {
+            clearInterval(countdownId);
+            countdownId = null;
+        }
+        
+        startBtn.classList.remove('hidden');
+        stopBtn.classList.add('hidden');
+        durationBtns.forEach(btn => btn.disabled = false);
+        
+        dot1.classList.remove('active');
+        dot2.classList.remove('active');
+    }
+
+    // Prevent screen sleep
+    let wakeLock = null;
+    async function requestWakeLock() {
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+            }
+        } catch (err) {
+            console.log('Wake Lock error:', err);
+        }
+    }
+
+    startBtn.addEventListener('click', requestWakeLock);
+</script>
+```
+
+</body>
+</html>
