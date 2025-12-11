@@ -674,23 +674,74 @@
                 audioContext.resume();
             }
             
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            // 恢復原本的設定：方波、較高頻率
-            oscillator.frequency.value = isAccent ? 1200 : 800;
-            oscillator.type = 'square';
-            
-            // 原本的音量
             const now = audioContext.currentTime;
-            gainNode.gain.setValueAtTime(0.8, now);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
             
-            oscillator.start(now);
-            oscillator.stop(now + 0.1);
+            // 創建木頭敲擊聲 - 使用多個頻率疊加
+            // 低頻基礎音（木頭的共鳴）
+            const osc1 = audioContext.createOscillator();
+            const gain1 = audioContext.createGain();
+            osc1.connect(gain1);
+            gain1.connect(audioContext.destination);
+            osc1.frequency.value = isAccent ? 180 : 150;
+            osc1.type = 'sine';
+            gain1.gain.setValueAtTime(0.4, now);
+            gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc1.start(now);
+            osc1.stop(now + 0.1);
+            
+            // 中頻點擊音（敲擊聲）
+            const osc2 = audioContext.createOscillator();
+            const gain2 = audioContext.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioContext.destination);
+            osc2.frequency.value = isAccent ? 800 : 600;
+            osc2.type = 'triangle';
+            gain2.gain.setValueAtTime(0, now);
+            gain2.gain.linearRampToValueAtTime(0.6, now + 0.005);
+            gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+            osc2.start(now);
+            osc2.stop(now + 0.08);
+            
+            // 高頻點綴（木頭表面的清脆感）
+            const osc3 = audioContext.createOscillator();
+            const gain3 = audioContext.createGain();
+            osc3.connect(gain3);
+            gain3.connect(audioContext.destination);
+            osc3.frequency.value = isAccent ? 2400 : 1800;
+            osc3.type = 'sine';
+            gain3.gain.setValueAtTime(0, now);
+            gain3.gain.linearRampToValueAtTime(0.3, now + 0.002);
+            gain3.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
+            osc3.start(now);
+            osc3.stop(now + 0.04);
+            
+            // 添加白噪音（木頭摩擦質感）
+            const bufferSize = audioContext.sampleRate * 0.05;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * 0.1;
+            }
+            const noise = audioContext.createBufferSource();
+            const noiseGain = audioContext.createGain();
+            const noiseFilter = audioContext.createBiquadFilter();
+            
+            noise.buffer = buffer;
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(audioContext.destination);
+            
+            noiseFilter.type = 'bandpass';
+            noiseFilter.frequency.value = 1000;
+            noiseFilter.Q.value = 1;
+            
+            noiseGain.gain.setValueAtTime(0, now);
+            noiseGain.gain.linearRampToValueAtTime(0.15, now + 0.001);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.03);
+            
+            noise.start(now);
+            noise.stop(now + 0.05);
+            
         } catch (e) {
             console.error('播放失敗:', e);
         }
