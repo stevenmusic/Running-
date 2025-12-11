@@ -717,6 +717,11 @@
 
     durationBtns.forEach(btn => {
         btn.addEventListener('click', () => {
+            // 用戶點擊時長按鈕時就初始化音頻（確保有用戶互動）
+            if (!audioContext) {
+                initAudio();
+            }
+            
             durationBtns.forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             selectedDuration = parseInt(btn.dataset.duration);
@@ -732,8 +737,15 @@
             return;
         }
 
-        // 初始化音頻
-        initAudio();
+        // 確保音頻初始化並恢復
+        if (!audioContext) {
+            initAudio();
+        }
+        if (audioContext.state === 'suspended') {
+            audioContext.resume().then(() => {
+                console.log('AudioContext 已在開始時恢復');
+            });
+        }
         
         isPlaying = true;
         beatCount = 0;
@@ -747,7 +759,18 @@
         stopBtn.classList.remove('hidden');
         durationBtns.forEach(btn => btn.disabled = true);
 
-        // 立即開始節拍
+        // 立即播放第一個節拍
+        try {
+            playClick(true);
+            beatCount++;
+            beatCountDisplay.textContent = beatCount;
+            updateBeatIndicator();
+            currentBeat = 1;
+        } catch (e) {
+            console.log('第一個節拍播放失敗:', e);
+        }
+
+        // 繼續後續節拍
         intervalId = setInterval(() => {
             try {
                 playClick(currentBeat === 0);
