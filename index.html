@@ -658,14 +658,16 @@
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
         
-        oscillator.frequency.value = isAccent ? 1400 : 900;
-        oscillator.type = 'square';
+        // 使用較低頻率和sine波，音色更柔和溫暖
+        oscillator.frequency.value = isAccent ? 800 : 600;
+        oscillator.type = 'sine';
         
+        // 保持大音量
         gainNode.gain.setValueAtTime(1.0, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.12);
         
         oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.15);
+        oscillator.stop(audioContext.currentTime + 0.12);
     }
 
     function updateBeatIndicator() {
